@@ -25,6 +25,7 @@ export const typeDef = gql`
     batchDateString: String
     batchSequence: [String]
     totalCompletedPatients: Int
+    currentStatus: String
   }
 
   extend type Query {
@@ -34,6 +35,8 @@ export const typeDef = gql`
 
   extend type Mutation {
     addBatch(input: BatchInput): Batch
+    startBatch(batchID: String): Batch
+    closeBatch(batchID: String): Batch
   }
 
   input StatusHistoryInput {
@@ -55,6 +58,7 @@ export const typeDef = gql`
     createdDate: Date
     operatorID: String
     batchDateString: String
+    currentStatus: String
   }
 `;
 
@@ -79,10 +83,39 @@ export const resolvers = {
       if (context.user) {
         input.operatorID = context.user.id;
         input.hospitalID = context.user.hospitalID;
+        input.currentStatus = 'Created';
       }
 
       let q = new Batch(input);
       return q.save();
+    },
+    startBatch: async (root, { batchID }, context) => {
+      const bp = await Batch.findOneAndUpdate(
+        { _id: batchID },
+        {
+          $push: {
+            statusHistory: {
+              status: 'Started',
+              setOn: new Date().toISOString()
+            }
+          },
+          $set: { currentStatus: 'Started' }
+        }
+      );
+    },
+    closeBatch: async (root, { batchID }, context) => {
+      const bp = await Batch.findOneAndUpdate(
+        { _id: batchID },
+        {
+          $push: {
+            statusHistory: {
+              status: 'Closed',
+              setOn: new Date().toISOString()
+            }
+          },
+          $set: { currentStatus: 'Closed' }
+        }
+      );
     }
   }
 };

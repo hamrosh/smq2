@@ -117,6 +117,7 @@ export const resolvers = {
   },
   Mutation: {
     addBatchPatients: (root, { input }, context) => {
+      console.log('trtr', input);
       return new Promise((resolve, reject) => {
         try {
           BatchPatient.countDocuments(

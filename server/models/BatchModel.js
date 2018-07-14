@@ -27,7 +27,8 @@ const BatchSchema = new Schema({
   totalCompletedPatients: {
     type: Number,
     default: 0
-  }
+  },
+  currentStatus: String
 });
 
 BatchSchema.index({ batchDateString: 1 });
